@@ -8,6 +8,9 @@ gem 'rails', '3.2.11'
 group :development, :test do
     gem 'sqlite3'
     gem 'rspec-rails'
+    gem 'guard-rspec'
+    gem 'guard-spork', :github => 'guard/guard-spork'
+    gem 'spork', '0.9.2'
 end
 
 # Gems used only for assets and not required
@@ -26,6 +29,10 @@ gem 'jquery-rails'
 
 group :test do
     gem 'capybara', '1.1.2'
+    gem 'rb-inotify', :require => false
+    gem 'rb-fsevent', :require => false
+    gem 'rb-fchange', :require => false
+    gem 'growl', '1.0.3'
 end
 
 group :production do
