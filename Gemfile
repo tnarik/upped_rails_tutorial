@@ -17,6 +17,9 @@ end
 
 group :development do
   gem 'annotate'
+
+  # Deploy with Capistrano
+  gem 'capistrano'
 end
 
 # Gems used only for assets and not required
@@ -39,6 +42,12 @@ group :test do
     gem 'rb-fsevent', :require => false
     gem 'rb-fchange', :require => false
     gem 'growl', '1.0.3'
+
+    #tutorial 7
+    gem 'factory_girl_rails', '4.1.0'
+    #tutorial 8
+    gem 'cucumber-rails', '1.2.1', :require => false
+    gem 'database_cleaner', '0.7.0'
 end
 
 group :production do
@@ -52,9 +61,6 @@ end
 
 # Use unicorn as the app server
 # gem 'unicorn'
-
-# Deploy with Capistrano
-# gem 'capistrano'
 
 # To use debugger
 # gem 'debugger'
