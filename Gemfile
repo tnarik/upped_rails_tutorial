@@ -13,6 +13,7 @@ group :development, :test do
     gem 'rspec-rails'
     gem 'guard-rspec'
     gem 'guard-spork', :github => 'guard/guard-spork'
+    gem 'guard-cucumber'
     gem 'spork', '0.9.2'
 end
 

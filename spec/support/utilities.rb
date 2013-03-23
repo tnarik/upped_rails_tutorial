@@ -8,6 +8,20 @@ end
 
 RSpec::Matchers.define :have_error_message do |message|
   match do |page|
-    page.should have_selector('div.alert.alert-error', text: message)
+    if message
+        page.should have_selector('div.alert.alert-error', text: message)
+    else
+        page.should have_selector('div.alert.alert-error')
+    end
+  end
+end
+
+RSpec::Matchers.define :have_success_message do |message|
+  match do |page|
+    if message
+        page.should have_selector('div.alert.alert-success', text: message)
+    else
+        page.should have_selector('div.alert.alert-success')
+    end
   end
 end
