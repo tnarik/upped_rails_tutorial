@@ -43,6 +43,7 @@ gem 'jquery-rails'
 
 group :test do
     gem 'capybara', '1.1.2'
+    gem 'capybara-webkit'  #for headless testing (requires 'sudo port install qt4-mac' on mac os x lion, and MacPorts 2.1.3)
     gem 'rb-inotify', :require => false
     gem 'rb-fsevent', :require => false
     gem 'rb-fchange', :require => false
