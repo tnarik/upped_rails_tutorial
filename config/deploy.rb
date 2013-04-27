@@ -31,6 +31,13 @@ before 'deploy:setup', 'rvm:install_ruby'  # install Ruby and create gemset, OR:
 #before 'deploy:setup', 'rvm:create_gemset' # only create gemset
 require "rvm/capistrano"
 
+namespace :deploy do
+  desc "Restart server"
+  task :restart, :roles => :app, :except => { :no_release => true } do
+    run "#{try_sudo} touch #{File.join(current_release,'tmp','restart.txt')}"
+  end
+end
+
 namespace :rvm do
   task :trust_rvmrc do
     run "rvm rvmrc trust #{current_release}"
@@ -52,14 +59,20 @@ namespace :deploy do
       when running deploy:setup for all stages one by one.
     DESC
     task :setup, :except => { :no_release => true } do
-      template = File.read("config/database.yml")
+      template = <<-EOF
+        production:
+          adapter: postgresql
+          encoding: unicode
+          database: upped
+          host: localhost
+          username: upped
+          password: #{Capistrano::CLI.password_prompt("Enter database password: ")}
+      EOF
+
       config = ERB.new(template)
 
       run "mkdir -p #{shared_path}/config"
       put config.result(binding), "#{shared_path}/config/database.yml"
-      #put config.result(binding)
-      #p "rvm rvmrc trust #{current_release}"
-      #run "rvm rvmrc trust #{current_release}"
     end
 
     desc <<-DESC

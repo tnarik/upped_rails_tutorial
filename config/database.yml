@@ -18,13 +18,5 @@ test: &test
   pool: 5
   timeout: 5000
 
-production:
-  adapter: postgresql
-  encoding: unicode
-  database: upped
-  host: localhost
-  username: upped
-  password: <%= Capistrano::CLI.password_prompt("Enter database password: ") %>
-
 cucumber:
   <<: *test
