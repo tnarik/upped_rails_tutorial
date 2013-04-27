@@ -31,13 +31,13 @@ before 'deploy:setup', 'rvm:install_ruby'  # install Ruby and create gemset, OR:
 #before 'deploy:setup', 'rvm:create_gemset' # only create gemset
 require "rvm/capistrano"
 
-#namespace :rvm do
-#  task :trust_rvmrc do
-#    run "rvm rvmrc trust #{release_path}"
-#  end
-#end
-#
-#after "deploy", "rvm:trust_rvmrc"
+namespace :rvm do
+  task :trust_rvmrc do
+    run "rvm rvmrc trust #{release_path}"
+  end
+end
+
+after "deploy", "rvm:trust_rvmrc"
 
 
 # if you want to clean up old releases on each deploy uncomment this:
