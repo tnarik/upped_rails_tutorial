@@ -22,9 +22,9 @@ production:
   adapter: postgresql
   encoding: unicode
   database: upped
-  pool: 5
+  host: localhost
   username: upped
-  password: <%= Capistrano::CLI.password_prompt("Enter MySQL database password: ") %>
+  password: <%= Capistrano::CLI.password_prompt("Enter database password: ") %>
 
 cucumber:
   <<: *test

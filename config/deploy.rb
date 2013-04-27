@@ -36,8 +36,7 @@ namespace :rvm do
     run "rvm rvmrc trust #{current_release}"
   end
 end
-before "deploy:restart", "rvm:trust_rvmrc"
-before "deploy:start", "rvm:trust_rvmrc"
+before "deploy:finalize_update", "rvm:trust_rvmrc"
 
 namespace :deploy do
   namespace :db do
@@ -55,15 +54,27 @@ namespace :deploy do
     task :setup, :except => { :no_release => true } do
       template = File.read("config/database.yml")
       config = ERB.new(template)
-      put config.result(binding), "#{current_release}/config/database.yml"
+
+      run "mkdir -p #{shared_path}/config"
+      put config.result(binding), "#{shared_path}/config/database.yml"
       #put config.result(binding)
       #p "rvm rvmrc trust #{current_release}"
       #run "rvm rvmrc trust #{current_release}"
     end
 
+    desc <<-DESC
+      [internal] Updates the symlink for database.yml file to the just deployed release.
+    DESC
+    task :symlink, :except => { :no_release => true } do
+      run "rm #{release_path}/config/database.yml"
+      run "ln -nfs #{shared_path}/config/database.yml #{release_path}/config/database.yml"
+    end
+
   end
 end
 after "deploy:setup", "deploy:db:setup" unless fetch(:skip_db_setup, false)
+after "deploy:finalize_update", "deploy:db:symlink"
+
 
 
 
