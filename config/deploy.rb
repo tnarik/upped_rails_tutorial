@@ -33,13 +33,38 @@ require "rvm/capistrano"
 
 namespace :rvm do
   task :trust_rvmrc do
-    p "rvm rvmrc trust #{current_release}"
     run "rvm rvmrc trust #{current_release}"
   end
 end
-
 before "deploy:restart", "rvm:trust_rvmrc"
 before "deploy:start", "rvm:trust_rvmrc"
+
+namespace :deploy do
+  namespace :db do
+
+    desc <<-DESC
+      Creates the database.yml configuration file in the release path.
+ 
+      When this recipe is loaded, db:setup is automatically configured \
+      to be invoked after deploy:setup. You can skip this task setting \
+      the variable :skip_db_setup to true. This is especially useful \ 
+      if you are using this recipe in combination with \
+      capistrano-ext/multistaging to avoid multiple db:setup calls \ 
+      when running deploy:setup for all stages one by one.
+    DESC
+    task :setup, :except => { :no_release => true } do
+      template = File.read("config/database.yml")
+      config = ERB.new(template)
+      put config.result(binding), "#{current_release}/config/database.yml"
+      #put config.result(binding)
+      #p "rvm rvmrc trust #{current_release}"
+      #run "rvm rvmrc trust #{current_release}"
+    end
+
+  end
+end
+after "deploy:setup", "deploy:db:setup" unless fetch(:skip_db_setup, false)
+
 
 
 # if you want to clean up old releases on each deploy uncomment this:
