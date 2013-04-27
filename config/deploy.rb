@@ -33,11 +33,13 @@ require "rvm/capistrano"
 
 namespace :rvm do
   task :trust_rvmrc do
-    run "rvm rvmrc trust #{release_path}"
+    p "rvm rvmrc trust #{current_release}"
+    run "rvm rvmrc trust #{current_release}"
   end
 end
 
-after "deploy", "rvm:trust_rvmrc"
+before "deploy:restart", "rvm:trust_rvmrc"
+before "deploy:start", "rvm:trust_rvmrc"
 
 
 # if you want to clean up old releases on each deploy uncomment this:
