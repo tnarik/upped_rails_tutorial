@@ -79,7 +79,7 @@ after "deploy:finalize_update", "deploy:db:symlink"
 
 
 
-after 'deploy:update_code', 'git:create_deploy_tag'
+before 'deploy:update_code', 'git:create_deploy_tag'
 
 namespace :git do
   def using_git?
@@ -89,7 +89,7 @@ namespace :git do
   def last_tag_matching(pattern)
     matching_tags = `git tag -l '#{pattern}'`.split
     matching_tags.sort! do |a,b|
-      String.natcmp(b, a, true)
+      Gem::Version.new(b) <=> Gem::Version.new(a)
     end
 
     last_tag = if matching_tags.length > 0
@@ -101,11 +101,33 @@ namespace :git do
 
   task :create_deploy_tag do
     if using_git?
-      puts "[git] creating new deploy tag"
+      current_sha = `git log --pretty=format:%H HEAD -1`
+      next_tag = "#{stage}-#{release_name}-#{user}"
+
+      last_tag = last_tag_matching "#{stage}-*"
+      last_tag_sha = if last_tag
+                       `git log --pretty=format:%H #{last_tag} -1`
+                     end
       user = `git config --get user.name`.chomp
       email = `git config --get user.email`.chomp
-      puts "this #{stage}  #{release_name} #{user}"
-      #{}`git tag -a 'deploy--#{Time.now.strftime("%Y-%m-%d-%H-%M-%S")}' -m 'Deploy: #{Time.now}' origin/production && git push origin --tags`
+      local_branch = `git branch --no-color 2> /dev/null | sed -e '/^[^*]/d'`.gsub(/\* /, '').chomp
+      local_sha = `git log --pretty=format:%H HEAD -1`.chomp
+      origin_sha = `git log --pretty=format:%H #{local_branch} -1`
+      unless local_sha == origin_sha
+        abort "#{local_branch} is not up to date with origin/#{local_branch}. Please make sure your code is up to date."
+      end
+
+      if last_tag_sha == current_sha
+        new_tag = last_tag
+      else
+        new_tag = next_tag
+        puts "[git] creating new deploy tag"
+        `git tag -a #{new_tag} -m 'Deploy: #{Time.now} by #{user} <#{email}>'`
+        `git push origin --tags #{local_branch}`
+
+        #{} -m 'Deploy: #{Time.now}' origin/production && git push origin --tags`
+      end
+      set :branch, new_tag
     end
    end
 end
