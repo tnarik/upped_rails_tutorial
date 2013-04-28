@@ -103,26 +103,22 @@ namespace :git do
     user = `git config --get user.name`.chomp
     email = `git config --get user.email`.chomp
     local_branch = `git branch --no-color 2> /dev/null | sed -e '/^[^*]/d'`.gsub(/\* /, '').chomp
-    local_sha = `git log --pretty=format:%H HEAD -1`.chomp
-    origin_sha = `git log --pretty=format:%H origin/#{local_branch} -1`
-    # There could be an error when no remote branch exist (which should if we want to deploy using Capistrano)
-    # Use push -u origin <branch>
 
-    unless local_sha == origin_sha
-      abort "#{local_branch} is not up to date with origin/#{local_branch}. Please make sure your code is up to date."
+    # try to set base tag
+    base_tag = fetch :tag, last_tag_matching( "staging-*")
+    unless last_tag_matching(base_tag)
+      abort "tag #{base_tag} does not exist."
     end
 
-    if last_tag_sha == current_sha
-      puts "the same version in local and origin #{local_branch}"
-      new_tag = last_tag
+    new_tag = next_tag
+    if new_tag == last_tag
+      puts "redeploying #{new_tag}"
     else
-      new_tag = next_tag
-      puts "[git] creating new deploy tag"
-      `git tag -a #{new_tag} -m 'Deploy: #{Time.now} by #{user} <#{email}>'`
+      puts "[git] promoting #{base_tag} to #{new_tag}"
+      `git tag -a #{new_tag} #{base_tag} -m 'Deploy: #{Time.now} by #{user} <#{email}>'`
       `git push origin --tags #{local_branch}`
-
-      #{} -m 'Deploy: #{Time.now}' origin/production && git push origin --tags`
     end
+
     set :branch, new_tag
   end
 
@@ -147,8 +143,6 @@ namespace :git do
       puts "[git] creating new deploy tag"
       `git tag -a #{new_tag} -m 'Deploy: #{Time.now} by #{user} <#{email}>'`
       `git push origin --tags #{local_branch}`
-
-      #{} -m 'Deploy: #{Time.now}' origin/production && git push origin --tags`
     end
     set :branch, new_tag
   end
