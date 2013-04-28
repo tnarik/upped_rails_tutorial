@@ -79,6 +79,37 @@ after "deploy:finalize_update", "deploy:db:symlink"
 
 
 
+after 'deploy:update_code', 'git:create_deploy_tag'
+
+namespace :git do
+  def using_git?
+    fetch(:scm, :git).to_sym == :git
+  end
+
+  def last_tag_matching(pattern)
+    matching_tags = `git tag -l '#{pattern}'`.split
+    matching_tags.sort! do |a,b|
+      String.natcmp(b, a, true)
+    end
+
+    last_tag = if matching_tags.length > 0
+                 matching_tags[0]
+               else
+                 nil
+               end
+  end
+
+  task :create_deploy_tag do
+    if using_git?
+      puts "[git] creating new deploy tag"
+      user = `git config --get user.name`.chomp
+      email = `git config --get user.email`.chomp
+      puts "this #{stage}  #{release_name} #{user}"
+      #{}`git tag -a 'deploy--#{Time.now.strftime("%Y-%m-%d-%H-%M-%S")}' -m 'Deploy: #{Time.now}' origin/production && git push origin --tags`
+    end
+   end
+end
+
 
 # if you want to clean up old releases on each deploy uncomment this:
 # after "deploy:restart", "deploy:cleanup"
