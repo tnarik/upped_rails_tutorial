@@ -1,0 +1,7 @@
+<p>Hi <%= @user.name %>,</p>
+
+<p>Thank you for registering!<br />
+<%= image_tag attachments['rails.png'].url %><br />
+In reality you should be getting a confirmation e-mail, but I'm postponing that until a bit later.</p>
+
+<p><%= link_to "Edit Profile", edit_user_url(@user, :host => "localhost:3000") %></p>

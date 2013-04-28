@@ -1,0 +1,6 @@
+Hi <%= @user.name %>,
+
+Thanks for registering.
+In reality you should be getting a confirmation e-mail, but I'm postponing that until a bit later.
+
+Edit Profile: <%= edit_user_url(@user, :host => "localhost:3000") %>

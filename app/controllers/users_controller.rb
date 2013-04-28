@@ -34,6 +34,10 @@ class UsersController < ApplicationController
     if @user.save
       sign_in @user
       flash[:success] = "Welcome to the Sample App!"
+
+      # send a confirmation e-mail (first to inform of creation)
+      UserMailer.signup_confirmation(@user).deliver
+
       redirect_to @user
     else
       render 'new'
