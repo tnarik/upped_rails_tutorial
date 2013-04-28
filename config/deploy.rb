@@ -153,9 +153,14 @@ namespace :git do
     set :branch, new_tag
   end
 
+  def tag_format
+    tag_format = fetch :git_tag_format, "#{stage}-#{release_name}-#{user}"
+    tag_format
+  end
+
   task :create_deploy_tag do
     set :current_sha, `git log --pretty=format:%H HEAD -1`
-    set :next_tag, "#{stage}-#{release_name}-#{user}"
+    set :next_tag, tag_format
     set :last_tag, last_tag_matching( "#{stage}-*")
     set :last_tag_sha, `git log --pretty=format:%H #{last_tag} -1` if last_tag
 
