@@ -99,40 +99,70 @@ namespace :git do
                end
   end
 
-  task :create_deploy_tag do
-    if using_git?
-      current_sha = `git log --pretty=format:%H HEAD -1`
-      next_tag = "#{stage}-#{release_name}-#{user}"
+  def tag_production
+    user = `git config --get user.name`.chomp
+    email = `git config --get user.email`.chomp
+    local_branch = `git branch --no-color 2> /dev/null | sed -e '/^[^*]/d'`.gsub(/\* /, '').chomp
+    local_sha = `git log --pretty=format:%H HEAD -1`.chomp
+    origin_sha = `git log --pretty=format:%H origin/#{local_branch} -1`
+    # There could be an error when no remote branch exist (which should if we want to deploy using Capistrano)
+    # Use push -u origin <branch>
 
-      last_tag = last_tag_matching "#{stage}-*"
-      last_tag_sha = if last_tag
-                       `git log --pretty=format:%H #{last_tag} -1`
-                     end
-      user = `git config --get user.name`.chomp
-      email = `git config --get user.email`.chomp
-      local_branch = `git branch --no-color 2> /dev/null | sed -e '/^[^*]/d'`.gsub(/\* /, '').chomp
-      local_sha = `git log --pretty=format:%H HEAD -1`.chomp
-      origin_sha = `git log --pretty=format:%H origin/#{local_branch} -1`
-      # There could be an error when no remote branch exist (which should if we want to deploy using Capistrano)
-
-      unless local_sha == origin_sha
-        abort "#{local_branch} is not up to date with origin/#{local_branch}. Please make sure your code is up to date."
-      end
-
-      if last_tag_sha == current_sha
-        puts "the same version in local and origin #{local_branch}"
-        new_tag = last_tag
-      else
-        new_tag = next_tag
-        puts "[git] creating new deploy tag"
-        `git tag -a #{new_tag} -m 'Deploy: #{Time.now} by #{user} <#{email}>'`
-        `git push origin --tags #{local_branch}`
-
-        #{} -m 'Deploy: #{Time.now}' origin/production && git push origin --tags`
-      end
-      set :branch, new_tag
+    unless local_sha == origin_sha
+      abort "#{local_branch} is not up to date with origin/#{local_branch}. Please make sure your code is up to date."
     end
-   end
+
+    if last_tag_sha == current_sha
+      puts "the same version in local and origin #{local_branch}"
+      new_tag = last_tag
+    else
+      new_tag = next_tag
+      puts "[git] creating new deploy tag"
+      `git tag -a #{new_tag} -m 'Deploy: #{Time.now} by #{user} <#{email}>'`
+      `git push origin --tags #{local_branch}`
+
+      #{} -m 'Deploy: #{Time.now}' origin/production && git push origin --tags`
+    end
+    set :branch, new_tag
+  end
+
+  def tag_staging
+    user = `git config --get user.name`.chomp
+    email = `git config --get user.email`.chomp
+    local_branch = `git branch --no-color 2> /dev/null | sed -e '/^[^*]/d'`.gsub(/\* /, '').chomp
+    local_sha = `git log --pretty=format:%H HEAD -1`.chomp
+    origin_sha = `git log --pretty=format:%H origin/#{local_branch} -1`
+    # There could be an error when no remote branch exist (which should if we want to deploy using Capistrano)
+    # Use push -u origin <branch>
+
+    unless local_sha == origin_sha
+      abort "#{local_branch} is not up to date with origin/#{local_branch}. Please make sure your code is up to date."
+    end
+
+    if last_tag_sha == current_sha
+      puts "the same version in local and origin #{local_branch}"
+      new_tag = last_tag
+    else
+      new_tag = next_tag
+      puts "[git] creating new deploy tag"
+      `git tag -a #{new_tag} -m 'Deploy: #{Time.now} by #{user} <#{email}>'`
+      `git push origin --tags #{local_branch}`
+
+      #{} -m 'Deploy: #{Time.now}' origin/production && git push origin --tags`
+    end
+    set :branch, new_tag
+  end
+
+  task :create_deploy_tag do
+    set :current_sha, `git log --pretty=format:%H HEAD -1`
+    set :next_tag, "#{stage}-#{release_name}-#{user}"
+    set :last_tag, last_tag_matching( "#{stage}-*")
+    set :last_tag_sha, `git log --pretty=format:%H #{last_tag} -1` if last_tag
+
+    if using_git?
+      send "tag_#{stage}" if respond_to?("tag_#{stage}")
+    end
+  end
 end
 
 
