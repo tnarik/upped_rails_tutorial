@@ -113,6 +113,8 @@ namespace :git do
       local_branch = `git branch --no-color 2> /dev/null | sed -e '/^[^*]/d'`.gsub(/\* /, '').chomp
       local_sha = `git log --pretty=format:%H HEAD -1`.chomp
       origin_sha = `git log --pretty=format:%H origin/#{local_branch} -1`
+      # There could be an error when no remote branch exist (which should if we want to deploy using Capistrano)
+
       unless local_sha == origin_sha
         abort "#{local_branch} is not up to date with origin/#{local_branch}. Please make sure your code is up to date."
       end
