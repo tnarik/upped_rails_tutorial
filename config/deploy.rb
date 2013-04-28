@@ -89,7 +89,7 @@ namespace :git do
   def last_tag_matching(pattern)
     matching_tags = `git tag -l '#{pattern}'`.split
     matching_tags.sort! do |a,b|
-      Gem::Version.new(b) <=> Gem::Version.new(a)
+      b <=> a
     end
 
     last_tag = if matching_tags.length > 0
@@ -118,6 +118,7 @@ namespace :git do
       end
 
       if last_tag_sha == current_sha
+        puts "the same version in local and origin #{local_branch}"
         new_tag = last_tag
       else
         new_tag = next_tag
