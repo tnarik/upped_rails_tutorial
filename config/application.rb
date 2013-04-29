@@ -1,6 +1,7 @@
 require File.expand_path('../boot', __FILE__)
 
-# load APP config.yml  
+# load APP config.yml
+require 'yaml'
 APP_CONFIG = YAML.load(File.read(File.expand_path('../config.yml', __FILE__)))
 
 # Pick the frameworks you want:
