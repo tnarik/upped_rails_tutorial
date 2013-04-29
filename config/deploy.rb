@@ -68,7 +68,6 @@ namespace :deploy do
       [internal] Updates the symlink for database.yml file to the just deployed release.
     DESC
     task :symlink, :except => { :no_release => true } do
-      run "rm #{File.join(current_release,'config','database.yml')}"
       run "ln -nfs #{File.join(shared_path,'config','database.yml')} #{File.join(current_release,'config','database.yml')}" 
     end
 
@@ -100,7 +99,6 @@ namespace :deploy do
       [internal] Updates the symlink for config.yml file to the just deployed release.
     DESC
     task :symlink, :except => { :no_release => true } do
-      run "rm #{File.join(current_release,'config','config.yml')}"
       run "ln -nfs #{File.join(shared_path,'config','config.yml')} #{File.join(current_release,'config','config.yml')}" 
     end
   end
