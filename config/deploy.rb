@@ -1,5 +1,6 @@
 require 'bundler/capistrano'
 require 'capistrano/ext/multistage'
+require 'securerandom'
 
 set :stages, %w(production staging)
 set :default_stage, "staging"
@@ -25,7 +26,6 @@ set :rvm_autolibs_flag, "read-only"        # more info: rvm help autolibs
 
 before 'deploy:setup', 'rvm:install_rvm'   # install RVM
 before 'deploy:setup', 'rvm:install_ruby'  # install Ruby and create gemset, OR:
-#before 'deploy:setup', 'rvm:create_gemset' # only create gemset
 require "rvm/capistrano"
 
 namespace :rvm do
@@ -76,6 +76,25 @@ namespace :deploy do
 end
 after "deploy:setup", "deploy:db:setup" unless fetch(:skip_db_setup, false)
 after "deploy:finalize_update", "deploy:db:symlink"
+
+
+
+namespace :deploy do
+  namespace :config do
+
+    desc <<-DESC
+      Configure the application during setup
+    DESC
+    task :setup do
+      puts "first create a new secret token"
+      puts SecureRandom.hex(64)
+      Capistrano::CLI.password_prompt("Enter database password: ")
+      Capistrano::CLI.password_prompt("Enter smtp password: ")
+    end
+  end
+end
+after "deploy:setup", "deploy:config:setup"
+
 
 
 
