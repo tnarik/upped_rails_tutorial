@@ -3,7 +3,12 @@ require File.expand_path('../boot', __FILE__)
 # load APP config.yml
 require 'yaml'
 app_config_file = File.expand_path('../config.yml', __FILE__)
-APP_CONFIG = YAML.load(File.read(app_config_file)) if File.exists?(app_config_file)
+if File.exists?(app_config_file)
+  APP_CONFIG = YAML.load(File.read(app_config_file)) 
+else
+  APP_CONFIG = {}
+end
+
 
 # Pick the frameworks you want:
 require "active_record/railtie"
