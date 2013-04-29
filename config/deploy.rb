@@ -88,13 +88,25 @@ namespace :deploy do
     task :setup do
       puts "first create a new secret token"
       thetoken=SecureRandom.hex(64)
-      put "Upped::Application.config.secret_token = '#{thetoken}'", "#{File.join(current_path, 'config', 'initializers','secret_token.rb')}" 
-      Capistrano::CLI.password_prompt("Enter database password: ")
-      Capistrano::CLI.password_prompt("Enter smtp password: ")
+      put "Upped::Application.config.secret_token = '#{thetoken}'", "#{File.join(current_release, 'config', 'initializers','secret_token.rb')}" 
+      #Capistrano::CLI.password_prompt("Enter database password: ")
+      app_config = {}
+      app_config['smtp_password'] = Capistrano::CLI.password_prompt("Enter smtp password: ")
+      app_config.to_yaml
+      put app_config.to_yaml, "#{File.join(shared_path,'config','config.yml')}" 
+    end
+
+    desc <<-DESC
+      [internal] Updates the symlink for config.yml file to the just deployed release.
+    DESC
+    task :symlink, :except => { :no_release => true } do
+      run "rm #{File.join(current_release,'config','config.yml')}"
+      run "ln -nfs #{File.join(shared_path,'config','config.yml')} #{File.join(current_release,'config','config.yml')}" 
     end
   end
 end
 after "deploy:setup", "deploy:config:setup"
+after "deploy:finalize_update", "deploy:config:symlink"
 
 
 

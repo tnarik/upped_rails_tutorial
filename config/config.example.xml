@@ -1,0 +1,4 @@
+# This is optional (either an environment variable or a default value would be used otherwise )
+#secret_token: sample
+
+smtp_password: sample
