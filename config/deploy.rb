@@ -87,7 +87,8 @@ namespace :deploy do
     DESC
     task :setup do
       puts "first create a new secret token"
-      puts SecureRandom.hex(64)
+      thetoken=SecureRandom.hex(64)
+      put "Upped::Application.config.secret_token = '#{thetoken}'", "#{File.join(current_path, 'config', 'initializers','secret_token.rb')}" 
       Capistrano::CLI.password_prompt("Enter database password: ")
       Capistrano::CLI.password_prompt("Enter smtp password: ")
     end
