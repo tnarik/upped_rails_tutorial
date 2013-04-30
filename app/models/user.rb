@@ -34,6 +34,19 @@ class User < ActiveRecord::Base
   validates :password, length: { minimum: 6 }
   validates :password_confirmation, presence: true
 
+  state_machine :status, initial: :inactive do
+    state :active, value: 0
+    state :inactive, value: 1
+    
+    event :activate do
+      transition :inactive => :active
+    end
+
+    event :inactivate do
+      transition :active => :inactive
+    end
+  end
+
   def feed
     # This is preliminary. See "Following users" for the full implementation.
     #Micropost.where("user_id = ?", id)
@@ -53,6 +66,10 @@ class User < ActiveRecord::Base
   end
 
   private
+
+    def validate_password?
+      ! password.nil?
+    end
 
     def create_remember_token
       self.remember_token = SecureRandom.urlsafe_base64

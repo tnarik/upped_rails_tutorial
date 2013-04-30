@@ -7,6 +7,7 @@ gem 'bcrypt-ruby'
 gem 'faker', '1.0.1'
 gem 'will_paginate', '3.0.3'
 gem 'bootstrap-will_paginate', '0.0.6'
+gem 'state_machine'
 
 # Bundle edge Rails instead:
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
@@ -22,6 +23,7 @@ end
 
 group :development do
   gem 'annotate'
+  gem 'ruby-graphviz', :require => 'graphviz'
 
   # Deploy with Capistrano
   gem 'rvm-capistrano'
