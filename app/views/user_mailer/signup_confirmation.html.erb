@@ -1,7 +1,8 @@
 <p>Hi <%= @user.name %>,</p>
 
 <p>Thank you for registering!<br />
-<%= image_tag attachments['rails.png'].url %><br />
-In reality you should be getting a confirmation e-mail, but I'm postponing that until a bit later.</p>
+We just need a quick verification of your e-mail and then you are good to go and do whatever you want.<br />
+Please click on the button:
+<%= link_to image_tag(attachments['rails.png'].url, alt: "Verification"), verify_url(@user.verification_token) %></p>
 
-<p><%= link_to "Edit Profile", edit_user_url(@user, :host => "localhost:3000") %></p>
+<p><%= link_to "Edit Profile", edit_user_url(@user) %></p>

@@ -1,6 +1,10 @@
 Hi <%= @user.name %>,
 
-Thanks for registering.
-In reality you should be getting a confirmation e-mail, but I'm postponing that until a bit later.
+Thanks for registering!
 
-Edit Profile: <%= edit_user_url(@user, :host => "localhost:3000") %>
+We just need a quick verification of your e-mail and then you are good to go and do whatever you want.
+Please click on the link below (which could be prettier, but we do what we can):
+
+<%= verify_url(@user.verification_token) %>
+
+Edit Profile: <%= edit_user_url(@user) %>
