@@ -1,5 +1,9 @@
 include ApplicationHelper
 
+def verify_email(user)
+  user.activate!
+end
+
 def sign_in(user)
   visit signin_path
   fill_in "Email",    with: user.email

@@ -9,6 +9,7 @@ describe "User pages" do
     let(:user) { FactoryGirl.create(:user) }
 
     before(:each) do
+      verify_email user
       sign_in user
       visit users_path
     end
@@ -37,6 +38,7 @@ describe "User pages" do
       describe "as an admin user" do
         let(:admin) { FactoryGirl.create(:admin) }
         before do
+          verify_email admin
           sign_in admin
           visit users_path
         end
@@ -62,7 +64,10 @@ describe "User pages" do
     let!(:m1) { FactoryGirl.create(:micropost, user: user, content: "Foo") }
     let!(:m2) { FactoryGirl.create(:micropost, user: user, content: "Bar") }
 
-    before { visit user_path(user) }
+    before do
+      verify_email user
+      visit user_path(user)
+    end
 
     it { should have_selector('h1', text: user.name) }
     it { should have_selector('title', text: user.name) }
@@ -85,7 +90,10 @@ describe "User pages" do
 
     describe "follow/unfollow buttons" do
       let(:other_user) { FactoryGirl.create(:user) }
-      before { sign_in user }
+      before do
+        verify_email other_user
+        sign_in user 
+      end
 
       describe "following a user" do
         before { visit user_path(other_user) }
@@ -172,7 +180,10 @@ describe "User pages" do
       end
 
       describe "after saving the user" do
-        before { click_button submit }
+        before do
+          click_button submit
+        end
+
         let(:user) { User.find_by_email('user@example.com') }
 
         it { should have_selector('title', text: user.name) }
@@ -191,6 +202,7 @@ describe "User pages" do
   describe "edit" do
     let(:user) { FactoryGirl.create(:user) }
     before do
+      verify_email user
       sign_in user
       visit edit_user_path(user)
     end
@@ -233,6 +245,7 @@ describe "User pages" do
 
     describe "followed users" do
       before do
+        verify_email user
         sign_in user
         visit following_user_path(user)
       end
@@ -244,6 +257,7 @@ describe "User pages" do
 
     describe "followers" do
       before do
+        verify_email other_user
         sign_in other_user
         visit followers_user_path(other_user)
       end

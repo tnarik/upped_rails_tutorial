@@ -17,6 +17,7 @@ describe "Static pages" do
       let!(:m2) { FactoryGirl.create(:micropost, user: user, content: "Dolor sit amet") }
 
       before do
+        verify_email user
         sign_in user
         visit root_path
       end
@@ -40,13 +41,14 @@ describe "Static pages" do
 
       describe "pagination of microposts" do
 
-        before(:all) { 60.times { FactoryGirl.create(:micropost, user: user, content: "some content") } }
-        after(:all) { user.microposts.destroy }
+        before { 60.times { FactoryGirl.create(:micropost, user: user, content: "some content") } }
         it "should paginate" do
+          visit root_path
           page.should have_selector('div.pagination')
         end
   
         it "should list each micropost" do
+          visit root_path
           user.microposts.paginate(page: 1).each do |item|
             page.should have_selector("li##{item.id}", text: item.content)
           end
