@@ -50,7 +50,7 @@ namespace :deploy do
     DESC
     task :setup, :except => { :no_release => true } do
       template = <<-EOF
-        production:
+        {stage}:
           adapter: postgresql
           encoding: unicode
           database: upped_#{stage}
