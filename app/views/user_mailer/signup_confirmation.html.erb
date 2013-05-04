@@ -4,5 +4,3 @@
 We just need a quick verification of your e-mail and then you are good to go and do whatever you want.<br />
 Please click on the button:
 <%= link_to image_tag(attachments['rails.png'].url, alt: "Verification"), verify_url(@user.verification_token) %></p>
-
-<p><%= link_to "Edit Profile", edit_user_url(@user) %></p>

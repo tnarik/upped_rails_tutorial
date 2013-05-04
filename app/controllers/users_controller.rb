@@ -4,7 +4,11 @@ class UsersController < ApplicationController
   before_filter :admin_user,     only: :destroy
 
   def index
-    @users = User.paginate(page: params[:page])
+    if current_user.admin
+      @users = User.paginate(page: params[:page])
+    else
+      @users = User.with_status(:active).paginate(page: params[:page])
+    end
   end
 
   def new
@@ -77,7 +81,7 @@ class UsersController < ApplicationController
     @user = User.find_by_verification_token(params[:verification_token])
     if @user
       @user.verification_token = nil
-      @user.status_event = "activate"
+      @user.status_event = :activate
       @user.save(validate: false)
       sign_in @user
       redirect_to @user

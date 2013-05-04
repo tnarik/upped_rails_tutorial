@@ -15,13 +15,9 @@
 require 'spec_helper'
 
 describe User do
+  let(:user) { FactoryGirl.build(:user) }
 
-  before do
-    @user = User.new(name: "Example User", email: "user@example.com",
-                    password: "foobar", password_confirmation: "foobar" )
-   end
-
-  subject { @user }
+  subject { user }
 
   it { should respond_to(:name) }
   it { should respond_to(:email) }
@@ -40,10 +36,16 @@ describe User do
   it { should respond_to(:following?) }
   it { should respond_to(:follow!) }
   it { should respond_to(:unfollow!) }
+  it { should respond_to(:status) }
+  it { should respond_to(:activate!) }
+  it { should respond_to(:active?) }
+  it { should respond_to(:inactive?) }
+  it { should respond_to(:verification_token) }
 
 
   it { should be_valid }
   it { should_not be_admin }
+  it { should be_inactive }
 
   describe "accessible attributes" do
     it "should not allow access to admin" do
@@ -55,25 +57,25 @@ describe User do
 
   describe "with admin attribute set to 'true'" do
     before do
-      @user.save!
-      @user.toggle!(:admin)
+      user.save!
+      user.toggle!(:admin)
     end
 
     it { should be_admin }
   end
 
   describe "when name is not present" do
-    before { @user.name = " " }
+    before { user.name = " " }
     it { should_not be_valid }
   end
 
   describe "when email is not present" do
-    before { @user.email = " " }
+    before { user.email = " " }
     it { should_not be_valid }
   end
 
   describe "when name is too long" do
-    before { @user.name = "a" * 51 }
+    before { user.name = "a" * 51 }
     it { should_not be_valid }
   end
 
@@ -82,8 +84,8 @@ describe User do
       addresses = %w[user@foo,com user_at_foo.org example.user@foo.
                      foo@bar_baz.com foo@bar+baz.com]
       addresses.each do |invalid_address|
-        @user.email = invalid_address
-        @user.should_not be_valid
+        user.email = invalid_address
+        user.should_not be_valid
       end      
     end
   end
@@ -92,8 +94,8 @@ describe User do
     it "should be valid" do
       addresses = %w[user@foo.COM A_US-ER@f.b.org frst.lst@foo.jp a+b@baz.cn]
       addresses.each do |valid_address|
-        @user.email = valid_address
-        @user.should be_valid
+        user.email = valid_address
+        user.should be_valid
       end      
     end
   end
@@ -102,15 +104,15 @@ describe User do
     let(:mixed_case_email) { "Foo@ExAMPle.CoM" }
 
     it "should be saved as all lower-case" do
-      @user.email = mixed_case_email
-      @user.save
-      @user.reload.email.should == mixed_case_email.downcase
+      user.email = mixed_case_email
+      user.save
+      user.reload.email.should == mixed_case_email.downcase
     end
   end
 
   describe "when email address is already taken" do
     before do
-      user_with_same_email = @user.dup
+      user_with_same_email = user.dup
       user_with_same_email.save
     end
 
@@ -119,8 +121,8 @@ describe User do
 
   describe "when email address is already taken" do
     before do
-      user_with_same_email = @user.dup
-      user_with_same_email.email = @user.email.upcase
+      user_with_same_email = user.dup
+      user_with_same_email.email = user.email.upcase
       user_with_same_email.save
     end
 
@@ -128,31 +130,31 @@ describe User do
   end
 
   describe "when password is not present" do
-    before { @user.password = @user.password_confirmation = " " }
+    before { user.password = user.password_confirmation = " " }
     it { should_not be_valid }
   end
 
   describe "when password doesn't match confirmation" do
-    before { @user.password_confirmation = "mismatch" }
+    before { user.password_confirmation = "mismatch" }
     it { should_not be_valid }
   end
 
   describe "when password confirmation is nil" do
-    before { @user.password_confirmation = nil }
+    before { user.password_confirmation = nil }
     it { should_not be_valid }
   end
 
   describe "with a password that's too short" do
-    before { @user.password = @user.password_confirmation = "a" * 5 }
+    before { user.password = user.password_confirmation = "a" * 5 }
     it { should be_invalid }
   end
 
   describe "return value of authenticate method" do
-    before { @user.save }
-    let(:found_user) { User.find_by_email(@user.email) }
+    before { user.save }
+    let(:found_user) { User.find_by_email(user.email) }
 
     describe "with valid password" do
-      it { should == found_user.authenticate(@user.password) }
+      it { should == found_user.authenticate(user.password) }
     end
 
     describe "with invalid password" do
@@ -164,27 +166,44 @@ describe User do
   end
 
   describe "remember token" do
-    before { @user.save }
-    its(:remember_token) { should_not be_blank }
+    subject { user.remember_token }
+
+    it{ should be_blank }
+
+    describe "after saving" do
+      before { user.save }
+      it { should_not be_blank }
+    end
+  end
+
+  describe "verification token" do
+    subject { user.verification_token }
+
+    it { should be_blank }
+
+    describe "after saving" do
+      before { user.save }
+      it { should_not be_blank }
+    end
   end
 
   describe "micropost associations" do
 
-    before { @user.save }
+    before { user.save }
     let!(:older_micropost) do 
-      FactoryGirl.create(:micropost, user: @user, created_at: 1.day.ago)
+      FactoryGirl.create(:micropost, user: user, created_at: 1.day.ago)
     end
     let!(:newer_micropost) do
-      FactoryGirl.create(:micropost, user: @user, created_at: 1.hour.ago)
+      FactoryGirl.create(:micropost, user: user, created_at: 1.hour.ago)
     end
 
     it "should have the right microposts in the right order" do
-      @user.microposts.should == [newer_micropost, older_micropost]
+      user.microposts.should == [newer_micropost, older_micropost]
     end
 
     it "should destroy associated microposts" do
-      microposts = @user.microposts.dup
-      @user.destroy
+      microposts = user.microposts.dup
+      user.destroy
       microposts.should_not be_empty
       microposts.each do |micropost|
         Micropost.find_by_id(micropost.id).should be_nil
@@ -198,7 +217,7 @@ describe User do
       let(:followed_user) { FactoryGirl.create(:user) }
 
       before do
-        @user.follow!(followed_user)
+        user.follow!(followed_user)
         3.times { followed_user.microposts.create!(content: "Lorem ipsum") }
       end
 
@@ -216,8 +235,8 @@ describe User do
   describe "following" do
     let(:other_user) { FactoryGirl.create(:user) }    
     before do
-      @user.save
-      @user.follow!(other_user)
+      user.save
+      user.follow!(other_user)
     end
 
     it { should be_following(other_user) }
@@ -225,14 +244,81 @@ describe User do
 
     describe "followed user" do
       subject { other_user }
-      its(:followers) { should include(@user) }
+      its(:followers) { should include(user) }
     end
     
     describe "and unfollowing" do
-      before { @user.unfollow!(other_user) }
+      before { user.unfollow!(other_user) }
 
       it { should_not be_following(other_user) }
       its(:followed_users) { should_not include(other_user) }
     end
+  end
+
+  describe "status state machine" do
+    
+
+    context "at the beginning" do
+      it { should be_inactive }
+      it { should be_valid }
+    end
+
+    context "when inactive" do
+      its(:status_events) { should include(:activate) }
+      its(:status_events) { should_not include(:inactivate) }
+
+      describe "when activating" do
+        context "explicitly" do
+          before { user.activate! }
+
+          it { should be_active }
+          it { should be_valid }
+        end
+
+        context "implicitly" do
+          before { user.status_event = :activate }
+
+          it { should be_inactive }
+
+          context "upon triggering " do
+            before { user.save }
+
+            it { should be_active }
+            it { should be_valid }
+          end
+        end
+      end
+    end
+
+    context "when active" do
+      before { user.activate! }
+
+      its(:status_events) { should include(:inactivate) }
+      its(:status_events) { should_not include(:activate) }
+
+      describe "when inactivating" do
+        context "explicitly" do
+          before { user.inactivate! }
+
+          it { should be_inactive }
+          it { should be_valid }
+        end
+
+        context "implicitly" do
+          before { user.status_event = :inactivate }
+
+          it { should be_active }
+
+
+          context "upon triggering " do
+            before { user.save }
+
+            it { should be_inactive }
+            it { should be_valid }
+          end
+        end
+      end
+    end
+
   end
 end
