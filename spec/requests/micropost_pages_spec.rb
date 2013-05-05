@@ -6,8 +6,7 @@ describe "Micropost pages" do
 
   let(:user) { FactoryGirl.create(:user) }
   before do
-    verify_email user
-    sign_in user
+    verify_and_sign_in user
   end
 
   describe "micropost creation" do

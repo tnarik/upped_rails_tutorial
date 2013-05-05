@@ -1,7 +1,14 @@
 include ApplicationHelper
 
 def verify_email(user)
-  user.activate!
+  if !user.active? and user.verification_token.present?
+    visit verify_url(user.verification_token)
+  end
+end
+
+def verify_and_sign_in(user)
+  verify_email user
+  sign_in user
 end
 
 def sign_in(user)

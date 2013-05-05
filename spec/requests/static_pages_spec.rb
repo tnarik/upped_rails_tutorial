@@ -17,8 +17,7 @@ describe "Static pages" do
       let!(:m2) { FactoryGirl.create(:micropost, user: user, content: "Dolor sit amet") }
 
       before do
-        verify_email user
-        sign_in user
+        verify_and_sign_in user
         visit root_path
       end
 
