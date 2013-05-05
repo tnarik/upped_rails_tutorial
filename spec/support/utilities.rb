@@ -8,6 +8,7 @@ end
 
 def verify_and_sign_in(user)
   verify_email user
+  user.reload
   sign_in user
 end
 
