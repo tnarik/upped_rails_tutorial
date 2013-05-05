@@ -8,9 +8,8 @@ describe "User pages" do
 
     let(:user) { FactoryGirl.create(:user) }
 
-    before(:each) do
-      verify_email user
-      sign_in user
+    before do
+      verify_and_sign_in user
       visit users_path
     end
 
@@ -18,15 +17,22 @@ describe "User pages" do
     it { should have_selector('h1',    text: 'All users') }
 
     describe "pagination" do
-
-      before(:all) { 30.times { FactoryGirl.create(:user) } }
+      before(:all) do
+        40.times { FactoryGirl.create(:active_user) }
+        10.times { FactoryGirl.create(:user) }
+      end
       after(:all)  { User.delete_all }
 
       it { should have_selector('div.pagination') }
 
-      it "should list each user" do
-        User.paginate(page: 1).each do |user|
+      it "should list each active user" do
+        User.with_status(:active).paginate(page: 1).each do |user|
           page.should have_selector('li', text: user.name)
+        end
+      end
+      it "should not list any not active user" do
+        User.with_status(:inactive).paginate(page: 1).each do |user|
+          page.should_not have_selector('li', text: user.name)
         end
       end
     end
@@ -37,35 +43,37 @@ describe "User pages" do
 
       describe "as an admin user" do
         let(:admin) { FactoryGirl.create(:admin) }
+        let!(:unverified_user) { FactoryGirl.create(:user) }
+
         before do
-          verify_email admin
-          sign_in admin
+          verify_and_sign_in admin
           visit users_path
         end
 
         it { should have_link('delete', href: user_path(User.first)) }
+        it "has delete links for unverified users as well" do
+          should have_link('delete', href: user_path(unverified_user))
+        end
 
         it "should be able to delete another user" do
           expect { click_link('delete') }.to change(User, :count).by(-1)
         end
-
-        it { should_not have_link('delete', href: user_path(admin)) }
-
+        it "has not a delete link for itself" do
+          should_not have_link('delete', href: user_path(admin))
+        end
         it "should not be able to delete itself" do
           expect { delete user_path(admin) }.not_to change(User, :count)
-         # expect { click_link('delete') }.to change(User, :count).by(-1)
         end
       end
     end
   end
 
   describe "profile page" do
-    let(:user) { FactoryGirl.create(:user) }
+    let(:user) { FactoryGirl.create(:active_user) }
     let!(:m1) { FactoryGirl.create(:micropost, user: user, content: "Foo") }
     let!(:m2) { FactoryGirl.create(:micropost, user: user, content: "Bar") }
 
     before do
-      verify_email user
       visit user_path(user)
     end
 
@@ -79,19 +87,18 @@ describe "User pages" do
     end
 
     describe "of another user" do
-      let(:another_user) { FactoryGirl.create(:user) }
+      let(:another_user) { FactoryGirl.create(:active_user) }
       let!(:m3) { FactoryGirl.create(:micropost, user: another_user, content: "Baz") }
 
-      it "shouldn't have delete links" do
+      it "shouldn't have delete links for microposts" do
         visit user_path(another_user)
         should_not have_link('delete', href: micropost_path(m3))
       end
     end
 
     describe "follow/unfollow buttons" do
-      let(:other_user) { FactoryGirl.create(:user) }
+      let(:other_user) { FactoryGirl.create(:active_user) }
       before do
-        verify_email other_user
         sign_in user 
       end
 
@@ -141,68 +148,10 @@ describe "User pages" do
       end
     end
   end
-  
-
-  describe "signup page" do
-    before { visit signup_path }
-
-    it { should have_selector('h1',    text: 'Sign up') }
-    it { should have_selector('title', text: full_title('Sign up')) }
-  end
-
-  describe "signup" do
-    before { visit signup_path }
-    let(:submit) { "Create my account" }
-
-    describe "with invalid information" do
-      it "should not create a user" do
-        expect { click_button submit }.not_to change(User, :count)
-      end
-
-      describe "after submission" do
-        before { click_button submit }
-
-        it { should have_selector('title', text: 'Sign up') }
-        it { should have_content('error') }
-      end
-    end
-
-    describe "with valid information" do
-      before do
-        fill_in "Name", with: "Example User"
-        fill_in "Email", with: "user@example.com"
-        fill_in "Password", with: "foobar"
-        fill_in "Confirm Password", with: "foobar"
-      end
-      
-      it "should create a user" do
-        expect { click_button submit }.to change(User, :count).by(1)
-      end
-
-      describe "after saving the user" do
-        before do
-          click_button submit
-        end
-
-        let(:user) { User.find_by_email('user@example.com') }
-
-        it { should have_selector('title', text: user.name) }
-        it { should have_success_message('Welcome') }
-        it { should have_link('Sign out') }
-
-        describe "followed by signout" do
-          before { click_link "Sign out" }
-          it { should have_link('Sign in') }
-        end
-      end
-
-    end
-  end
 
   describe "edit" do
-    let(:user) { FactoryGirl.create(:user) }
+    let(:user) { FactoryGirl.create(:active_user) }
     before do
-      verify_email user
       sign_in user
       visit edit_user_path(user)
     end
@@ -239,13 +188,12 @@ describe "User pages" do
   end
 
   describe "following/followers" do
-    let(:user) { FactoryGirl.create(:user) }
-    let(:other_user) { FactoryGirl.create(:user) }
+    let(:user) { FactoryGirl.create(:active_user) }
+    let(:other_user) { FactoryGirl.create(:active_user) }
     before { user.follow!(other_user) }
 
     describe "followed users" do
       before do
-        verify_email user
         sign_in user
         visit following_user_path(user)
       end
@@ -257,7 +205,6 @@ describe "User pages" do
 
     describe "followers" do
       before do
-        verify_email other_user
         sign_in other_user
         visit followers_user_path(other_user)
       end

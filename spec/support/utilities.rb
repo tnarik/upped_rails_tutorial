@@ -31,6 +31,16 @@ RSpec::Matchers.define :have_error_message do |message|
   end
 end
 
+RSpec::Matchers.define :have_notice_message do |message|
+  match do |page|
+    if message
+        page.should have_selector('div.alert.alert-notice', text: message)
+    else
+        page.should have_selector('div.alert.alert-notice')
+    end
+  end
+end
+
 RSpec::Matchers.define :have_success_message do |message|
   match do |page|
     if message

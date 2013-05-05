@@ -15,6 +15,10 @@ Given /^the user has an account$/ do
                       password: "foobar", password_confirmation: "foobar")
 end
 
+Given /^the user has verified it$/ do
+  visit verify_url(@user.verification_token)
+end
+
 When /^the user submits valid signin information$/ do
   fill_in "Email",    with: @user.email
   fill_in "Password", with: @user.password 

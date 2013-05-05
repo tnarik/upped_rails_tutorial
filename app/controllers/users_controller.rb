@@ -4,7 +4,7 @@ class UsersController < ApplicationController
   before_filter :admin_user,     only: :destroy
 
   def index
-    if current_user.admin
+    if current_user.admin?
       @users = User.paginate(page: params[:page])
     else
       @users = User.with_status(:active).paginate(page: params[:page])
