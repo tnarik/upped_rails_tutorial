@@ -4,11 +4,12 @@ class PasswordResetsController < ApplicationController
   end
 
   def create
-    user = User.find_by_email(params[:email])
+    user = User.find_by_email(params[:email].downcase)
     if user
       user.send_password_reset
     else
       flash[:error] = "that e-mail is unknown to us"
+      redirect_to new_password_reset_path
     end
   end
 

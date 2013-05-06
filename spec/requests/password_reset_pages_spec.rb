@@ -25,6 +25,7 @@ describe "password resets" do
 
         it "should display an error" do
           should have_error_message('that e-mail is unknown to us')
+          current_path.should eq new_password_reset_path
         end
 
         it "not e-mail should be sent" do
@@ -32,9 +33,9 @@ describe "password resets" do
         end
       end
 
-      describe "an existing e-mail is provided" do
+      describe "an existing e-mail is provided (regardless the case)" do
         before do
-          fill_in "Email", with: user.email
+          fill_in "Email", with: user.email.upcase
           click_button reset_request
           user.reload
         end
