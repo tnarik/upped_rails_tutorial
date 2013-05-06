@@ -64,22 +64,22 @@ describe "signup page" do
           end
 
           it "received the correct verify link" do
-            last_email.parts[0].text_part.body.encoded.should match(verify_url(user.verification_token))
+            last_email.parts[0].text_part.body.encoded.should match(email_verification_url(user.verification_token))
           end
 
-          it "can visit the verify link" do
-            visit verify_url(user.verification_token)
+          it "can visit the correct verify link" do
+            visit email_verification_url(user.verification_token)
           end
 
           it "cannot visit protected pages" do
             visit user_path(user)
-            current_path.should == root_path
+            current_path.should eq root_path
             should have_selector('title', text: full_title(""))
             visit edit_user_path(user)
-            current_path.should == signin_path
+            current_path.should eq signin_path
             should have_selector('title', text: full_title("Sign in"))
             visit users_path(user)
-            current_path.should == signin_path
+            current_path.should eq signin_path
             should have_selector('title', text: full_title("Sign in"))
           end
         end
@@ -89,7 +89,7 @@ describe "signup page" do
         let(:user) { User.find_by_email('user@example.com') }
 
         before do
-          visit verify_url(user.verification_token)
+          visit email_verification_url(user.verification_token)
         end
 
         it { should have_selector('title', text: user.name) }
@@ -101,7 +101,7 @@ describe "signup page" do
         end
 
         it "cannot visit the verify link" do
-          visit verify_url(user.verification_token)
+          visit email_verification_url(user.verification_token)
         end
 
         describe "followed by signout" do

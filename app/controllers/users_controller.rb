@@ -40,9 +40,7 @@ class UsersController < ApplicationController
     if @user.save
       sign_in @user
       flash[:success] = "Welcome to the Sample App!"
-      # send a confirmation e-mail (first to inform of creation)
       UserMailer.signup_confirmation(@user).deliver
-      #redirect_to @user
       render 'verification_step'
     else
       render 'new'
@@ -74,20 +72,6 @@ class UsersController < ApplicationController
     @user = User.find(params[:id])
     @users = @user.followers.paginate(page: params[:page])
     render 'show_follow'
-  end
-
-  def verify_email
-    # something should be verified here
-    @user = User.find_by_verification_token(params[:verification_token])
-    if @user
-      @user.verification_token = nil
-      @user.status_event = :activate
-      @user.save(validate: false)
-      sign_in @user
-      redirect_to @user
-    else
-      redirect_to root_path
-    end
   end
 
   private

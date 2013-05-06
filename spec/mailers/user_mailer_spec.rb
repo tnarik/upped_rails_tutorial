@@ -41,7 +41,7 @@ describe UserMailer do
           its(:mime_type) { should match("text/plain") }
           it "renders the body" do
             text_part.body.encoded.should match("Hi #{user.name}")
-            text_part.body.encoded.should match(verify_url(user.verification_token))
+            text_part.body.encoded.should match(email_verification_url(user.verification_token))
           end
         end
 
@@ -51,7 +51,7 @@ describe UserMailer do
           its(:mime_type) { should match("text/html") }
           it "renders the body" do
             html_part.body.encoded.should match("Hi #{user.name}")
-            html_part.body.encoded.should have_link("Verification", href: verify_url(user.verification_token))
+            html_part.body.encoded.should have_link("Verification", href: email_verification_url(user.verification_token))
           end
           it "uses the inline attachment" do
             html_part.body.should match("src=\"cid:#{mail.attachments[0].cid}")

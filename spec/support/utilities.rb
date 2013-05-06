@@ -2,7 +2,7 @@ include ApplicationHelper
 
 def verify_email(user)
   if !user.active? and user.verification_token.present?
-    visit verify_url(user.verification_token)
+    visit email_verification_url(user.verification_token)
   end
 end
 

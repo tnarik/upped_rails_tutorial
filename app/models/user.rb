@@ -67,17 +67,18 @@ class User < ActiveRecord::Base
   end
 
   private
+    def generate_token(column)
+      begin
+        self[column] = SecureRandom.urlsafe_base64(64)
+      end while User.exists?(column => self[column] )
+    end
 
     def validate_password?
       ! password.nil?
     end
 
     def create_verification_token
-      while true
-        token = SecureRandom.urlsafe_base64(64)
-        break unless User.find_by_verification_token( token )
-      end
-      self.verification_token = token
+      generate_token(:verification_token)
     end
 
     def create_remember_token

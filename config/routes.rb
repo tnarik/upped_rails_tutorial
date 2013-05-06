@@ -11,7 +11,9 @@ Upped::Application.routes.draw do
   match '/signup',  to: 'users#new'
   match '/signin',  to: 'sessions#new'
   match '/signout', to: 'sessions#destroy', via: :delete
-  match '/verify/:verification_token', to: 'users#verify_email', as: :verify, via: :get #should be PUT, but it's a simple link
+
+  # Should be PUT but it's an e-mail link
+  match '/email_verifications/:verification_token', to: 'email_verifications#update', via: :get, as: :email_verification
 
   root to: 'static_pages#home'
   match '/help',    to: 'static_pages#help'

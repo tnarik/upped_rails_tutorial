@@ -16,7 +16,7 @@ Given /^the user has an account$/ do
 end
 
 Given /^the user has verified it$/ do
-  visit verify_url(@user.verification_token)
+  visit email_verification_url(@user.verification_token)
 end
 
 When /^the user submits valid signin information$/ do
