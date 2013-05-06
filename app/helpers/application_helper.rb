@@ -8,4 +8,8 @@ module ApplicationHelper
             "#{base_title} | #{page_title}"
         end
     end
+
+    def ga_track
+      Gabba::Gabba.new("UA-40707807-1", "upped.me").event("category_yy", "action_nn")
+    end
 end
