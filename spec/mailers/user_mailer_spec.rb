@@ -69,4 +69,41 @@ describe UserMailer do
     end
 
   end
+
+  describe "password_reset" do
+    let(:user) { FactoryGirl.create(:active_user, password_reset_token: "apasswordresettoken") }
+    before do
+      UserMailer.password_reset(user).deliver
+    end
+
+    it "delivers the mail" do
+      UserMailer.deliveries.length.should  == 1
+      last_email.should_not be_blank
+    end
+
+    describe "the mail delivered" do
+      subject(:mail) { last_email }
+
+      it "is sent with the right subject" do
+        mail.subject.should eq("Tnarik's great app: password reset")
+      end
+      it "is sent to the right address" do
+        mail.to.should include(user.email)
+      end
+      it "is sent from admin@upped.me" do
+        mail.from.should include("admin@upped.me")
+      end
+
+      describe "the first part" do
+        describe "the text version" do
+          its(:mime_type) { should match("text/plain") }
+          it "renders the body" do
+            mail.body.encoded.should match("Hi #{user.name}")
+            mail.body.encoded.should match(edit_password_reset_url(user.password_reset_token))
+          end
+        end
+      end
+    end
+
+  end
 end

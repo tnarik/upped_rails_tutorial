@@ -7,6 +7,7 @@ Upped::Application.routes.draw do
   resources :sessions, only: [:new, :create, :destroy]
   resources :microposts, only: [:create, :destroy]
   resources :relationships, only: [:create, :destroy]
+  resources :password_resets, only: [:new, :create, :update]
 
   match '/signup',  to: 'users#new'
   match '/signin',  to: 'sessions#new'
@@ -14,6 +15,9 @@ Upped::Application.routes.draw do
 
   # Should be PUT but it's an e-mail link
   match '/email_verifications/:verification_token', to: 'email_verifications#update', via: :get, as: :email_verification
+  
+  match '/password_resets/activate/:id', to: 'password_resets#edit', via: :get, as: :edit_password_reset
+
 
   root to: 'static_pages#home'
   match '/help',    to: 'static_pages#help'

@@ -45,6 +45,7 @@ describe "signup page" do
         it "a verification e-mail is sent" do
           UserMailer.deliveries.length.should == 1
           last_email.should_not be_blank
+          last_email.to.should include(user.email)
         end
 
         describe "while not verified" do

@@ -41,7 +41,9 @@ describe User do
   it { should respond_to(:active?) }
   it { should respond_to(:inactive?) }
   it { should respond_to(:verification_token) }
-
+  it { should respond_to(:password_reset_token) }
+  it { should respond_to(:password_reset_sent_at) }
+  it { should respond_to(:send_password_reset) }
 
   it { should be_valid }
   it { should_not be_admin }
@@ -320,5 +322,22 @@ describe User do
       end
     end
 
+  end
+
+  describe "send_password_reset" do
+    before { user.send_password_reset }
+    it "generates a unique password reset token" do
+      last_token = user.password_reset_token
+      user.send_password_reset
+      user.password_reset_token.should_not eq last_token
+    end
+
+    it "generates a unique password reset token" do
+      user.reload.password_reset_sent_at.should be_present
+    end
+
+    it "delivers an e-mail to the user" do
+      last_email.to.should include(user.email)
+    end
   end
 end
