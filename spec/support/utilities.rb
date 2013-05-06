@@ -1,5 +1,17 @@
 include ApplicationHelper
 
+def verify_email(user)
+  if !user.active? and user.verification_token.present?
+    visit email_verification_url(user.verification_token)
+  end
+end
+
+def verify_and_sign_in(user)
+  verify_email user
+  user.reload
+  sign_in user
+end
+
 def sign_in(user)
   visit signin_path
   fill_in "Email",    with: user.email
@@ -15,6 +27,16 @@ RSpec::Matchers.define :have_error_message do |message|
         page.should have_selector('div.alert.alert-error', text: message)
     else
         page.should have_selector('div.alert.alert-error')
+    end
+  end
+end
+
+RSpec::Matchers.define :have_notice_message do |message|
+  match do |page|
+    if message
+        page.should have_selector('div.alert.alert-notice', text: message)
+    else
+        page.should have_selector('div.alert.alert-notice')
     end
   end
 end

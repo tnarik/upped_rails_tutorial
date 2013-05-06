@@ -5,6 +5,10 @@ FactoryGirl.define do
     password "foobar"
     password_confirmation "foobar"
 
+    factory :active_user do
+      status User.state_machines[:status].states[:active].value
+    end
+
     factory :admin do
       admin true
     end

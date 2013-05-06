@@ -1,0 +1,8 @@
+Hi <%= @user.name %>,
+
+Thanks for registering!
+
+We just need a quick verification of your e-mail and then you are good to go and do whatever you want.
+Please click on the link below (which could be prettier, but we do what we can):
+
+<%= email_verification_url(@user.verification_token) %>

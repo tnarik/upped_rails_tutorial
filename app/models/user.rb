@@ -25,6 +25,7 @@ class User < ActiveRecord::Base
 
   before_save { self.email.downcase! }
   before_save :create_remember_token
+  before_create :create_verification_token
 
   validates :name, presence: true, length: { maximum: 50 }
   VALID_EMAIL_REGEX = /\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i
@@ -33,6 +34,19 @@ class User < ActiveRecord::Base
                     uniqueness: { case_sensitive: false }
   validates :password, length: { minimum: 6 }
   validates :password_confirmation, presence: true
+
+  state_machine :status, initial: :inactive do
+    state :active, value: 0
+    state :inactive, value: 1
+    
+    event :activate do
+      transition :inactive => :active
+    end
+
+    event :inactivate do
+      transition :active => :inactive
+    end
+  end
 
   def feed
     # This is preliminary. See "Following users" for the full implementation.
@@ -53,6 +67,19 @@ class User < ActiveRecord::Base
   end
 
   private
+    def generate_token(column)
+      begin
+        self[column] = SecureRandom.urlsafe_base64(64)
+      end while User.exists?(column => self[column] )
+    end
+
+    def validate_password?
+      ! password.nil?
+    end
+
+    def create_verification_token
+      generate_token(:verification_token)
+    end
 
     def create_remember_token
       self.remember_token = SecureRandom.urlsafe_base64

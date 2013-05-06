@@ -1,5 +1,6 @@
 require 'bundler/capistrano'
 require 'capistrano/ext/multistage'
+require 'securerandom'
 
 set :stages, %w(production staging)
 set :default_stage, "staging"
@@ -25,7 +26,6 @@ set :rvm_autolibs_flag, "read-only"        # more info: rvm help autolibs
 
 before 'deploy:setup', 'rvm:install_rvm'   # install RVM
 before 'deploy:setup', 'rvm:install_ruby'  # install Ruby and create gemset, OR:
-#before 'deploy:setup', 'rvm:create_gemset' # only create gemset
 require "rvm/capistrano"
 
 namespace :rvm do
@@ -50,7 +50,7 @@ namespace :deploy do
     DESC
     task :setup, :except => { :no_release => true } do
       template = <<-EOF
-        production:
+        {stage}:
           adapter: postgresql
           encoding: unicode
           database: upped_#{stage}
@@ -68,7 +68,6 @@ namespace :deploy do
       [internal] Updates the symlink for database.yml file to the just deployed release.
     DESC
     task :symlink, :except => { :no_release => true } do
-      run "rm #{File.join(current_release,'config','database.yml')}"
       run "ln -nfs #{File.join(shared_path,'config','database.yml')} #{File.join(current_release,'config','database.yml')}" 
     end
 
@@ -76,6 +75,37 @@ namespace :deploy do
 end
 after "deploy:setup", "deploy:db:setup" unless fetch(:skip_db_setup, false)
 after "deploy:finalize_update", "deploy:db:symlink"
+
+
+
+namespace :deploy do
+  namespace :config do
+
+    desc <<-DESC
+      Configure the application during setup
+    DESC
+    task :setup do
+      puts "first create a new secret token"
+      thetoken=SecureRandom.hex(64)
+      put "Upped::Application.config.secret_token = '#{thetoken}'", "#{File.join(current_release, 'config', 'initializers','secret_token.rb')}" 
+      #Capistrano::CLI.password_prompt("Enter database password: ")
+      app_config = {}
+      app_config['smtp_password'] = Capistrano::CLI.password_prompt("Enter smtp password: ")
+      app_config.to_yaml
+      put app_config.to_yaml, "#{File.join(shared_path,'config','config.yml')}" 
+    end
+
+    desc <<-DESC
+      [internal] Updates the symlink for config.yml file to the just deployed release.
+    DESC
+    task :symlink, :except => { :no_release => true } do
+      run "ln -nfs #{File.join(shared_path,'config','config.yml')} #{File.join(current_release,'config','config.yml')}" 
+    end
+  end
+end
+after "deploy:setup", "deploy:config:setup"
+after "deploy:finalize_update", "deploy:config:symlink"
+
 
 
 

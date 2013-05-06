@@ -4,7 +4,11 @@ class UsersController < ApplicationController
   before_filter :admin_user,     only: :destroy
 
   def index
-    @users = User.paginate(page: params[:page])
+    if current_user.admin?
+      @users = User.paginate(page: params[:page])
+    else
+      @users = User.with_status(:active).paginate(page: params[:page])
+    end
   end
 
   def new
@@ -26,6 +30,8 @@ class UsersController < ApplicationController
   def show
     @user = User.find(params[:id])
     @microposts = @user.microposts.paginate(page: params[:page])
+
+    redirect_to(root_path) if @user.inactive?
   end
 
   def create
@@ -34,13 +40,14 @@ class UsersController < ApplicationController
     if @user.save
       sign_in @user
       flash[:success] = "Welcome to the Sample App!"
-      redirect_to @user
+      UserMailer.signup_confirmation(@user).deliver
+      render 'verification_step'
     else
       render 'new'
     end
   end
 
-   def edit
+  def edit
   end
 
   def update

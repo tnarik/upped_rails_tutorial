@@ -3,5 +3,6 @@ role :app, "nonmachinepeople.net"                          # This may be the sam
 role :db,  "nonmachinepeople.net", :primary => true # This is where Rails migrations will run
 
 set :deploy_to, "/home/tnarik/ror/staged_#{application}"
+set :rails_env, "staging"
 
 set :user, "tnarik"  # The server's user for deploys

@@ -29,9 +29,11 @@ describe "Authentication" do
       end
     end
 
-    describe "with valid information" do
+    describe "verified and with valid information" do
       let(:user) { FactoryGirl.create(:user) }
-      before { sign_in user }
+      before do
+        verify_and_sign_in user
+      end
 
       it { should have_selector('title', text: user.name) }
 
@@ -46,15 +48,19 @@ describe "Authentication" do
   describe "authorization" do
 
     describe "for non-signed-in users" do
-      let(:user) { FactoryGirl.create(:user) }
+      let(:user) { FactoryGirl.create(:active_user) }
 
       describe "when attempting to visit a protected page" do
-        before do
-          visit edit_user_path(user)
-          sign_in user
+        before { visit edit_user_path(user) }
+
+        describe "redirects to the signin page" do
+          it { should have_selector('title', text: 'Sign in') }
         end
 
         describe "after signing in" do
+          before do
+            sign_in user
+          end
 
           it "should render the desired protected page" do
             page.should have_selector('title', text: 'Edit user')
@@ -122,7 +128,7 @@ describe "Authentication" do
 
         describe "submitting to the destroy action" do
           before { delete relationship_path(1) }
-          specify { response.should redirect_to(signin_path) }          
+          specify { response.should redirect_to(signin_path) }
         end
       end
     end
@@ -130,7 +136,7 @@ describe "Authentication" do
     describe "as wrong user" do
       let(:user) { FactoryGirl.create(:user) }
       let(:wrong_user) { FactoryGirl.create(:user, email: "wrong@example.com") }
-      before { sign_in user }
+      before { verify_and_sign_in user }
 
       describe "visiting Users#edit page" do
         before { visit edit_user_path(wrong_user) }
@@ -147,11 +153,11 @@ describe "Authentication" do
       let(:user) { FactoryGirl.create(:user) }
       let(:non_admin) { FactoryGirl.create(:user) }
 
-      before { sign_in non_admin }
+      before { verify_and_sign_in non_admin }
 
       describe "submitting a DELETE request to the Users#destroy action" do
         before { delete user_path(user) }
-        specify { response.should redirect_to(root_path) }        
+        specify { response.should redirect_to(root_path) }
       end
     end
   end
