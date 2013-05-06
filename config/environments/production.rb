@@ -63,7 +63,8 @@ Upped::Application.configure do
 
   # Log the query plan for queries taking more than this (works
   # with SQLite, MySQL, and PostgreSQL)
-  # config.active_record.auto_explain_threshold_in_seconds = 0.5
+  # config.active_record.auto_explain_threshold_in_seconds = 0.5  
+  config.middleware.use("Rack::GoogleAnalytics", :tracker => "UA-40707807-1")
 
   config.action_mailer.default_url_options = { host: "upped.me" }
 end
