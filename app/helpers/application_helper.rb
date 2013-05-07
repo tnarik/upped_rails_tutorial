@@ -12,8 +12,8 @@ module ApplicationHelper
   def ga_track
     gabba = Gabba::Gabba.new("UA-40707807-1", "upped.me")
     gabba.referer(request.env['HTTP_REFERER']) if request
-    gabba.ip(request.env["REMOTE_ADDR"]) if request
-    gabba.page_view("title", "path")
+    gabba.ip(request.remote_ip) if request
+    gabba.page_view("title", request.path) if request
     p gabba
     gabba.event("category_yy", "action_nn")
   end
