@@ -87,9 +87,8 @@ namespace :deploy do
     task :setup do
       puts "first create a new secret token"
       thetoken=SecureRandom.hex(64)
-      put "Upped::Application.config.secret_token = '#{thetoken}'", "#{File.join(current_release, 'config', 'initializers','secret_token.rb')}" 
-      #Capistrano::CLI.password_prompt("Enter database password: ")
       app_config = {}
+      app_config['secret_token'] = thetoken
       app_config['smtp_password'] = Capistrano::CLI.password_prompt("Enter smtp password: ")
       app_config.to_yaml
       put app_config.to_yaml, "#{File.join(shared_path,'config','config.yml')}" 
