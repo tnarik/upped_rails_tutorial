@@ -26,6 +26,8 @@ set :rvm_autolibs_flag, "read-only"        # more info: rvm help autolibs
 
 before 'deploy:setup', 'rvm:install_rvm'   # install RVM
 before 'deploy:setup', 'rvm:install_ruby'  # install Ruby and create gemset, OR:
+ENV['GEM'] = "bundler"
+before 'deploy:setup', 'rvm:install_gem'  # install Ruby and create gemset, OR:
 require "rvm/capistrano"
 
 namespace :rvm do
